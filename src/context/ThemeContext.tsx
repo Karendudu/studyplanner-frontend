@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useLayoutEffect, useMemo, useState, type ReactNode } from "react";
 
 type ThemeMode = "light" | "dark";
 
@@ -9,24 +9,25 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
-const themeStorageKey = "studyplanner-theme";
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>(() => {
-    const saved = localStorage.getItem(themeStorageKey) as ThemeMode | null;
-    return saved === "dark" ? "dark" : "light";
-  });
+  const [theme] = useState<ThemeMode>("light");
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = document.documentElement;
-    root.classList.toggle("dark", theme === "dark");
-    localStorage.setItem(themeStorageKey, theme);
+    root.classList.remove("dark");
   }, [theme]);
 
-  const toggleTheme = () => setThemeState((current) => (current === "light" ? "dark" : "light"));
+  const toggleTheme = () => {
+    // Tema oscuro deshabilitado por decisión de diseño.
+  };
+
+  const setTheme = () => {
+    // Tema oscuro deshabilitado por decisión de diseño.
+  };
 
   const value = useMemo(
-    () => ({ theme, toggleTheme, setTheme: setThemeState }),
+    () => ({ theme, toggleTheme, setTheme }),
     [theme]
   );
 

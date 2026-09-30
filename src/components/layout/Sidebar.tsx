@@ -1,12 +1,13 @@
 import { NavLink } from "react-router-dom";
 import { menuItems } from "../../constants/menu";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/authState";
+import { roleLabel } from "../../constants/roles";
 
 function Sidebar() {
   const { user, logout, canAccess } = useAuth();
 
   return (
-    <aside className="w-72 bg-cundi-500 min-h-screen shadow-xl transition-colors duration-300">
+    <aside className="sticky top-0 flex h-screen w-72 flex-col bg-cundi-500 shadow-xl transition-colors duration-300">
 
       <div className="h-20 flex items-center justify-center border-b border-cundi-700">
 
@@ -18,7 +19,7 @@ function Sidebar() {
 
       </div>
 
-      <nav className="mt-8">
+      <nav className="mt-8 flex-1 overflow-y-auto pb-6">
 
         {menuItems
           .filter((item) => canAccess(item.path))
@@ -45,9 +46,9 @@ function Sidebar() {
 
       </nav>
 
-      <div className="absolute bottom-0 w-72 p-6 border-t border-green-900">
+      <div className="mt-auto border-t border-green-900 p-6">
         <div className="text-white font-semibold">{user?.name ?? "Invitado"}</div>
-        <div className="text-green-200 text-sm">{user?.role === "admin" ? "Administrador" : user?.role === "teacher" ? "Docente" : "Estudiante"}</div>
+        <div className="text-green-200 text-sm">{user ? roleLabel(user.role) : "Invitado"}</div>
         <button onClick={logout} className="mt-3 rounded-lg border border-green-700 px-3 py-2 text-sm text-white hover:bg-[#006536]">
           Cerrar sesión
         </button>

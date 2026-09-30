@@ -1,84 +1,33 @@
-import {
-    Users,
-    GraduationCap,
-    Calendar,
-    Bell
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
-
-const actions = [
-
-    {
-        title: "Usuarios",
-        icon: <Users size={28} />,
-        path: "/usuarios",
-    },
-
-    {
-        title: "Programas",
-        icon: <GraduationCap size={28} />,
-        path: "/programas",
-    },
-
-    {
-        title: "Horarios",
-        icon: <Calendar size={28} />,
-        path: "/horarios",
-    },
-
-    {
-        title: "Avisos",
-        icon: <Bell size={28} />,
-        path: "/avisos",
-    }
-
-];
+import { Link } from "react-router-dom";
+import { menuItems } from "../../constants/menu";
+import { useAuth } from "../../context/authState";
 
 function QuickActions() {
-    const navigate = useNavigate();
+    const { canAccess } = useAuth();
+    const actions = menuItems.filter(
+        (item) => item.path !== "/dashboard" && canAccess(item.path)
+    );
 
     return (
-
-        <div className="surface-card p-6">
-
-            <h2 className="text-xl font-bold text-primary mb-6">
-
-                Acciones rápidas
-
-            </h2>
-
-            <div className="grid grid-cols-4 gap-5">
-
-                {
-
-                    actions.map(action => (
-
-                        <button
-                            key={action.title}
-                            onClick={() => navigate(action.path)}
-                            className="rounded-xl border border-surface bg-surface text-gray-700 hover:bg-cundi-600 hover:text-white duration-300 p-6 flex flex-col items-center gap-3 shadow-sm dark:bg-[#102618] dark:border-cundi-700 dark:text-gray-200"
+        <section className="surface-card p-6">
+            <h2 className="mb-6 text-xl font-bold text-[#0f2a1d]">Acciones rápidas</h2>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+                {actions.map((action) => {
+                    const Icon = action.icon;
+                    return (
+                        <Link
+                            key={action.path}
+                            to={action.path}
+                            className="group flex flex-col items-center gap-3 rounded-2xl border border-[#dce7e1] bg-white p-5 text-[#152e21] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#6cb68a] hover:bg-[#f4fbf7] hover:shadow-[0_14px_28px_rgba(15,42,29,0.12)]"
                         >
-
-                            {action.icon}
-
-                            <span>
-
-                                {action.title}
-
-                            </span>
-
-                        </button>
-
-                    ))
-
-                }
-
+                            <Icon size={26} aria-hidden="true" />
+                            <span className="text-center font-medium">{action.title}</span>
+                        </Link>
+                    );
+                })}
             </div>
-
-        </div>
-
-    )
-
+        </section>
+    );
 }
 
 export default QuickActions;

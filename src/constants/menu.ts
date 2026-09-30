@@ -1,5 +1,6 @@
 import {
   LayoutDashboard,
+  FileUp,
   Users,
   GraduationCap,
   School,
@@ -10,66 +11,73 @@ import {
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
+import type { Role } from "./roles";
 
 interface MenuItem {
   title: string;
   path: string;
   icon: LucideIcon;
-  allowedRoles?: Array<"admin" | "teacher" | "student">;
+  allowedRoles?: Role[];
 }
 
 export const menuItems: MenuItem[] = [
   {
     title: "Dashboard",
-    path: "/",
+    path: "/dashboard",
     icon: LayoutDashboard,
   },
   {
     title: "Usuarios",
-    path: "/usuarios",
+    path: "/dashboard/usuarios",
     icon: Users,
-    allowedRoles: ["admin", "teacher"],
+    allowedRoles: ["admin", "udec"],
   },
   {
-    title: "Programas",
-    path: "/programas",
+    title: "Núcleos y Materias",
+    path: "/dashboard/programas",
     icon: GraduationCap,
-    allowedRoles: ["admin", "teacher", "student"],
+    allowedRoles: ["admin", "udec", "student"],
   },
   {
     title: "Facultades",
-    path: "/facultades",
+    path: "/dashboard/facultades",
     icon: School,
-    allowedRoles: ["admin"],
+    allowedRoles: ["admin", "udec", "student"],
   },
   {
     title: "Sedes",
-    path: "/sedes",
+    path: "/dashboard/sedes",
     icon: Building2,
-    allowedRoles: ["admin"],
+    allowedRoles: ["admin", "udec", "student"],
   },
   {
     title: "Horarios",
-    path: "/horarios",
+    path: "/dashboard/horarios",
     icon: Calendar,
-    allowedRoles: ["admin", "teacher", "student"],
+    allowedRoles: ["admin", "udec", "student"],
   },
   {
     title: "Materias",
-    path: "/materias",
+    path: "/dashboard/materias",
     icon: BookOpen,
-    allowedRoles: ["admin", "teacher", "student"],
+    allowedRoles: ["admin", "udec", "student"],
   },
   {
     title: "Avisos",
-    path: "/avisos",
+    path: "/dashboard/avisos",
     icon: Bell,
-    allowedRoles: ["admin", "teacher", "student"],
+    allowedRoles: ["admin", "udec", "student"],
   },
   {
     title: "Auditoría",
-    path: "/auditoria",
+    path: "/dashboard/auditoria",
     icon: ShieldCheck,
-    allowedRoles: ["admin"],
+    allowedRoles: ["admin", "udec"],
+  },
+  {
+    title: "Mi sábana",
+    path: "/dashboard/sabana",
+    icon: FileUp,
+    allowedRoles: ["student"],
   },
 ];

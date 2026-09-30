@@ -11,6 +11,7 @@ interface Props {
     documento: string;
     telefono: string;
     rol: string;
+    contrasenia: string;
   }) => void;
   initialData?: {
     nombre?: string;

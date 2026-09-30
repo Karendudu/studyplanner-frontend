@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { FormEvent } from "react";
 
 interface UserFormProps {
@@ -9,6 +9,7 @@ interface UserFormProps {
     documento: string;
     telefono: string;
     rol: string;
+    contrasenia: string;
   }) => void;
   onCancel: () => void;
   initialData?: {
@@ -22,21 +23,16 @@ interface UserFormProps {
 }
 
 function UserForm({ onSubmit, onCancel, initialData }: UserFormProps) {
-  const [form, setForm] = useState({
-    nombre: "",
-    apellido: "",
-    correo: "",
-    documento: "",
-    telefono: "",
-    rol: "Administrador",
-  });
+  const [form, setForm] = useState(() => ({
+    nombre: initialData?.nombre || "",
+    apellido: initialData?.apellido || "",
+    correo: initialData?.correo || "",
+    documento: initialData?.documento || "",
+    telefono: initialData?.telefono || "",
+    rol: initialData?.rol || "Estudiante",
+    contrasenia: "",
+  }));
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (initialData) {
-      setForm((prev) => ({ ...prev, ...initialData }));
-    }
-  }, [initialData]);
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -48,6 +44,11 @@ function UserForm({ onSubmit, onCancel, initialData }: UserFormProps) {
 
     if (!form.nombre.trim() || !form.apellido.trim()) {
       setError("Nombre y apellido son obligatorios.");
+      return;
+    }
+
+    if (!initialData && form.contrasenia.length < 8) {
+      setError("La contraseña inicial debe tener al menos 8 caracteres.");
       return;
     }
 
@@ -68,7 +69,7 @@ function UserForm({ onSubmit, onCancel, initialData }: UserFormProps) {
     }
 
     onSubmit(form);
-    setForm({ nombre: "", apellido: "", correo: "", documento: "", telefono: "", rol: "Administrador" });
+    setForm({ nombre: "", apellido: "", correo: "", documento: "", telefono: "", rol: "Estudiante", contrasenia: "" });
   };
 
   return (
@@ -130,11 +131,25 @@ function UserForm({ onSubmit, onCancel, initialData }: UserFormProps) {
           onChange={(event) => handleChange("rol", event.target.value)}
           className="w-full mt-2 border rounded-xl p-3"
         >
-          <option>Administrador</option>
-          <option>Docente</option>
           <option>Estudiante</option>
+          <option>Udec</option>
         </select>
       </label>
+
+      {!initialData && (
+        <label className="block space-y-2 font-medium text-gray-700">
+          Contraseña inicial
+          <input
+            type="password"
+            autoComplete="new-password"
+            minLength={8}
+            value={form.contrasenia}
+            onChange={(event) => handleChange("contrasenia", event.target.value)}
+            className="mt-2 w-full rounded-xl border p-3"
+            required
+          />
+        </label>
+      )}
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

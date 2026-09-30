@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth, type Role } from "../../context/AuthContext";
+import Button from "../../components/ui/Button";
+import ErrorAlert from "../../components/ui/ErrorAlert";
 
-const roles: Array<{ value: Role; label: string }> = [
+const roles = [
   { value: "student", label: "Estudiante" },
   { value: "teacher", label: "Docente" },
   { value: "admin", label: "Administrativo" },
 ];
 
 function RegisterPage() {
-  const { register, verifyAccount } = useAuth();
   const navigate = useNavigate();
+  const fixedFaculty = "Ingeniería";
 
   const [form, setForm] = useState({
     name: "",
@@ -18,64 +19,29 @@ function RegisterPage() {
     email: "",
     documento: "",
     telefono: "",
-    role: "student" as Role,
-    faculty: "",
-    semester: "",
+    role: "student",
+    faculty: fixedFaculty,
+    semester: "1",
   });
 
   const [error, setError] = useState("");
-  const [registrationResult, setRegistrationResult] = useState<{
-    email: string;
-    password: string;
-    code: string;
-    emailBody?: string;
-  } | null>(null);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [verificationMessage, setVerificationMessage] = useState("");
-  const [isVerified, setIsVerified] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
-    setVerificationMessage("");
-    setIsVerified(false);
+    setSuccess("");
+    setLoading(true);
 
-    const result = register({
-      name: `${form.name.trim()} ${form.lastName.trim()}`,
-      role: form.role,
-      email: form.email.trim(),
-      documento: form.documento.trim(),
-      telefono: form.telefono.trim(),
-      faculty: form.faculty.trim() || undefined,
-      semester: form.semester.trim() || undefined,
-    });
-
-    if (!result.ok) {
-      setError(result.message ?? "No se pudo crear la cuenta.");
-      return;
-    }
-
-    setRegistrationResult({
-      email: form.email.trim().toLowerCase(),
-      password: result.password ?? "",
-      code: result.code ?? "",
-      emailBody: result.emailBody,
-    });
-    setForm({ name: "", lastName: "", email: "", documento: "", telefono: "", role: "student", faculty: "", semester: "" });
-  };
-
-  const handleVerify = () => {
-    if (!registrationResult) {
-      return;
-    }
-
-    const result = verifyAccount(registrationResult.email, verificationCode.trim());
-    setVerificationMessage(result.message);
-    setIsVerified(result.ok);
+    setTimeout(() => {
+      setLoading(false);
+      setError("Registro temporalmente deshabilitado mientras el backend está en mantenimiento. Ingresa con el usuario administrador de prueba.");
+    }, 300);
   };
 
   return (
@@ -174,90 +140,52 @@ function RegisterPage() {
               Facultad
               <input
                 value={form.faculty}
-                onChange={(event) => handleChange("faculty", event.target.value)}
-                placeholder="Ingeniería"
-                className="w-full rounded-xl border border-gray-200 p-3 outline-none focus:border-[#007B3E]"
+                readOnly
+                className="w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 p-3 text-gray-600"
               />
             </label>
 
             <label className="space-y-2 text-sm font-medium text-gray-700">
-              Semestre
+              Semestre: <span className="font-bold text-[#007B3E]">{form.semester}</span>
               <input
+                type="range"
+                min={1}
+                max={10}
+                step={1}
                 value={form.semester}
                 onChange={(event) => handleChange("semester", event.target.value)}
-                placeholder="Semestre 5"
-                className="w-full rounded-xl border border-gray-200 p-3 outline-none focus:border-[#007B3E]"
+                className="w-full accent-[#007B3E]"
               />
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>Sem 1</span>
+                <span>Sem 10</span>
+              </div>
             </label>
           </div>
 
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          {error && <ErrorAlert mensaje={error} tipo="error" onClose={() => setError("")} />}
+          {success && <ErrorAlert mensaje={success} tipo="info" onClose={() => setSuccess("")} />}
 
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <Link to="/login" className="text-sm text-[#007B3E] hover:underline">
-              Ya tengo una cuenta
-            </Link>
-            <button className="rounded-xl bg-[#007B3E] px-6 py-3 text-white hover:bg-[#006536]">
-              Registrarme
-            </button>
+            <div className="flex items-center gap-3">
+              <Link to="/login" className="text-sm text-[#007B3E] hover:underline">
+                Ya tengo una cuenta
+              </Link>
+              <Button type="button" variant="outline" size="sm" onClick={() => navigate("/login")}>
+                Volver al login
+              </Button>
+            </div>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="rounded-2xl border border-[#79C000]/40 bg-gradient-to-r from-[#007B3E] to-[#005A2A] shadow-lg"
+              variant="primary"
+              size="lg"
+            >
+              {loading ? "Registrando..." : "Registrarme"}
+            </Button>
           </div>
         </form>
-
-        {registrationResult ? (
-          <div className="mt-8 rounded-3xl border border-green-200 bg-green-50 p-6">
-            <h2 className="text-xl font-semibold text-[#00482B]">Registro exitoso</h2>
-            <p className="mt-2 text-gray-700">
-              Se ha enviado un código de verificación a tu correo institucional.
-            </p>
-            <p className="mt-3 text-sm text-gray-600">
-              Contraseña provisional: <strong>{registrationResult.password}</strong>
-            </p>
-            <p className="mt-1 text-sm text-gray-600">
-              Código de verificación (simulado): <strong>{registrationResult.code}</strong>
-            </p>
-
-            <div className="mt-6 space-y-4">
-              <label className="space-y-2 text-sm font-medium text-gray-700">
-                Código de verificación
-                <input
-                  value={verificationCode}
-                  onChange={(event) => setVerificationCode(event.target.value)}
-                  className="w-full rounded-xl border border-gray-200 p-3 outline-none focus:border-[#007B3E]"
-                />
-              </label>
-
-              <button
-                type="button"
-                onClick={handleVerify}
-                className="rounded-xl bg-[#007B3E] px-6 py-3 text-white hover:bg-[#006536]"
-              >
-                Verificar cuenta
-              </button>
-
-              {registrationResult?.emailBody ? (
-                <div className="rounded-2xl border border-green-200 bg-white p-4 text-sm text-gray-700">
-                  <p className="font-semibold text-[#00482B]">Correo simulado enviado:</p>
-                  <pre className="whitespace-pre-wrap break-words text-sm text-gray-600 mt-2">{registrationResult.emailBody}</pre>
-                </div>
-              ) : null}
-              {verificationMessage ? (
-                <p className={`text-sm ${isVerified ? "text-green-700" : "text-red-600"}`}>
-                  {verificationMessage}
-                </p>
-              ) : null}
-
-              {isVerified ? (
-                <button
-                  type="button"
-                  onClick={() => navigate("/login")}
-                  className="rounded-xl border border-[#007B3E] px-6 py-3 text-[#007B3E] hover:bg-[#E8F8ED]"
-                >
-                  Ir a iniciar sesión
-                </button>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
       </div>
     </div>
   );

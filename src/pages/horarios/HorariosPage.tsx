@@ -1,11 +1,29 @@
 import { useEffect, useState } from "react";
-import { getSchedules } from "../../services/dataService";
+import ErrorAlert from "../../components/ui/ErrorAlert";
+import { getHorarios } from "../../services/backend";
+import { handleApiError } from "../../services/api";
+import type { Horario } from "../../services/types";
 
 function HorariosPage() {
-  const [schedules, setSchedules] = useState<any[]>([]);
+  const [horarios, setHorarios] = useState<Horario[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    getSchedules().then(setSchedules);
+    const cargarHorarios = async () => {
+      try {
+        const datos = await getHorarios();
+        setHorarios(datos);
+      } catch (err) {
+        const apiError = handleApiError(err);
+        setError(apiError.mensaje);
+        console.error("Error al cargar horarios:", apiError);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargarHorarios();
   }, []);
 
   return (
@@ -15,23 +33,40 @@ function HorariosPage() {
         <p className="text-gray-500">Ve la disponibilidad de grupos y crea tu esquema de horario.</p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {schedules.map((item, index) => (
-          <div key={`${item.day}-${index}`} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-[#00482B]">{item.subject}</h2>
-              <span className="text-sm text-gray-500">{item.day}</span>
-            </div>
+      {error && <ErrorAlert mensaje={error} tipo="error" onClose={() => setError("")} />}
 
-            <div className="mt-4 grid gap-2 text-sm text-gray-700">
-              <p><strong>Hora:</strong> {item.time}</p>
-              <p><strong>Grupo:</strong> {item.group}</p>
-              <p><strong>Aula:</strong> {item.location}</p>
-              <p><strong>Cupos disponibles:</strong> {item.availability}</p>
+      {loading ? (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-32 bg-gray-200 dark:bg-slate-700 rounded-xl animate-pulse" />
+          ))}
+        </div>
+      ) : horarios.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500">No hay horarios disponibles</p>
+        </div>
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {horarios.map((horario) => (
+            <div key={horario.idHorario} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-[#00482B] dark:text-white">
+                  Horario #{horario.idHorario}
+                </h2>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {horario.idUsuario ? `Usuario: ${horario.idUsuario}` : "Sin asignar"}
+                </span>
+              </div>
+
+              <div className="mt-4 grid gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <p><strong>Total Créditos:</strong> {horario.totalCreditos || "N/A"}</p>
+                <p><strong>Horas Semanales:</strong> {horario.totalHorasSemanales || "N/A"}</p>
+                <p><strong>Núcleo Horario:</strong> {horario.idNucleoHorario || "No asignado"}</p>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -12,7 +12,7 @@ interface Props {
     telefono: string;
     rol: string;
     contrasenia: string;
-  }) => void;
+  }) => Promise<boolean>;
   initialData?: {
     nombre?: string;
     apellido?: string;
@@ -27,7 +27,7 @@ interface Props {
 function UserModal({ open, onClose, onSubmit, initialData, title }: Props) {
   return (
     <Modal open={open} onClose={onClose} title={title ?? "Nuevo Usuario"}>
-      <UserForm onSubmit={onSubmit} onCancel={onClose} initialData={initialData} />
+      <UserForm key={initialData?.documento ?? "new-user"} onSubmit={onSubmit} onCancel={onClose} initialData={initialData} />
     </Modal>
   );
 }

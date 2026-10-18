@@ -1,14 +1,5 @@
-import { createContext, useContext, useLayoutEffect, useMemo, useState, type ReactNode } from "react";
-
-type ThemeMode = "light" | "dark";
-
-interface ThemeContextValue {
-  theme: ThemeMode;
-  toggleTheme: () => void;
-  setTheme: (theme: ThemeMode) => void;
-}
-
-const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
+import { useLayoutEffect, useMemo, useState, type ReactNode } from "react";
+import { ThemeContext, type ThemeMode } from "./themeState";
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme] = useState<ThemeMode>("light");
@@ -34,12 +25,5 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
-export function useTheme() {
-  const context = useContext(ThemeContext);
 
-  if (!context) {
-    throw new Error("useTheme must be used inside ThemeProvider");
-  }
 
-  return context;
-}

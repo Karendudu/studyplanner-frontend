@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 interface ResponseDisplayProps {
   title: string;
-  data: any;
+  data: unknown;
   isLoading?: boolean;
   error?: string;
   children?: ReactNode;

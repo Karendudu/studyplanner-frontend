@@ -1,5 +1,6 @@
 import {
   LayoutDashboard,
+  ClipboardList,
   FileUp,
   Users,
   GraduationCap,
@@ -7,8 +8,7 @@ import {
   Building2,
   Calendar,
   BookOpen,
-  Bell,
-  ShieldCheck,
+  Megaphone,
   type LucideIcon,
 } from "lucide-react";
 import type { Role } from "./roles";
@@ -57,6 +57,12 @@ export const menuItems: MenuItem[] = [
     allowedRoles: ["admin", "udec", "student"],
   },
   {
+    title: "Matrícula",
+    path: "/dashboard/matricula",
+    icon: ClipboardList,
+    allowedRoles: ["admin", "udec", "student"],
+  },
+  {
     title: "Materias",
     path: "/dashboard/materias",
     icon: BookOpen,
@@ -65,14 +71,8 @@ export const menuItems: MenuItem[] = [
   {
     title: "Avisos",
     path: "/dashboard/avisos",
-    icon: Bell,
-    allowedRoles: ["admin", "udec", "student"],
-  },
-  {
-    title: "Auditoría",
-    path: "/dashboard/auditoria",
-    icon: ShieldCheck,
-    allowedRoles: ["admin", "udec"],
+    icon: Megaphone,
+    allowedRoles: ["udec", "student"],
   },
   {
     title: "Mi sábana",

@@ -2,6 +2,7 @@ import { apiRequest } from "./api";
 import type {
   Horario,
   ReqCrearHorario,
+  ReqCrearNucleo,
   NucleoTematico,
   Usuario,
   ResponseCantiUsuarios,
@@ -14,7 +15,15 @@ import type {
   ReqCrearUsuario,
   ReqEditarUsuario,
   ReqEditarHorario,
+  ReqEditarNucleo,
   ReqActualizarCupo,
+  EstudiantesPorPrograma,
+  AvisoInformativo,
+  ReqCrearAvisoInformativo,
+  ReqEditarAvisoInformativo,
+  ReqSolicitarRecuperacion,
+  ReqVerificarCodigoRecuperacion,
+  ReqCambiarContraseniaRecuperacion,
 } from "./types";
 
 // ==================== Auth Endpoints ====================
@@ -39,6 +48,34 @@ export async function inicioSesionUsuario(payload: ReqLogin): Promise<ResponseLo
   });
 }
 
+// ==================== Recuperación de contraseña ====================
+export async function solicitarRecuperacionContrasenia(
+  payload: ReqSolicitarRecuperacion
+): Promise<unknown> {
+  return apiRequest<unknown>("/api/RecuperacionContrasena/solicitar", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function verificarCodigoRecuperacion(
+  payload: ReqVerificarCodigoRecuperacion
+): Promise<unknown> {
+  return apiRequest<unknown>("/api/RecuperacionContrasena/verificar", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function cambiarContraseniaRecuperacion(
+  payload: ReqCambiarContraseniaRecuperacion
+): Promise<unknown> {
+  return apiRequest<unknown>("/api/RecuperacionContrasena/cambiar", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 // ==================== Email Endpoints ====================
 /**
  * Envío de horario al usuario por correo
@@ -46,6 +83,34 @@ export async function inicioSesionUsuario(payload: ReqLogin): Promise<ResponseLo
 export async function enviarHorarioUsuario(payload: ReqEnviarEmail): Promise<ResponseEmail> {
   return apiRequest<ResponseEmail>("/api/Email/Envio de horario al usuario", {
     method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+// ==================== Avisos Informativos ====================
+export async function getAvisosInformativos(): Promise<AvisoInformativo[]> {
+  return apiRequest<AvisoInformativo[]>("/api/AvisoInformativo");
+}
+
+export async function getAvisoInformativo(id: number): Promise<AvisoInformativo> {
+  return apiRequest<AvisoInformativo>(`/api/AvisoInformativo/${id}`);
+}
+
+export async function crearAvisoInformativo(
+  payload: ReqCrearAvisoInformativo
+): Promise<AvisoInformativo> {
+  return apiRequest<AvisoInformativo>("/api/AvisoInformativo", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function editarAvisoInformativo(
+  id: number,
+  payload: ReqEditarAvisoInformativo
+): Promise<AvisoInformativo> {
+  return apiRequest<AvisoInformativo>(`/api/AvisoInformativo/${id}`, {
+    method: "PUT",
     body: JSON.stringify(payload),
   });
 }
@@ -68,8 +133,8 @@ export async function getHorarioById(id: number): Promise<Horario> {
 /**
  * Crea un nuevo horario
  */
-export async function crearHorario(payload: ReqCrearHorario): Promise<any> {
-  return apiRequest<any>(`/api/Horario/crear`, {
+export async function crearHorario(payload: ReqCrearHorario): Promise<unknown> {
+  return apiRequest<unknown>(`/api/Horario/crear`, {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -81,8 +146,8 @@ export async function crearHorario(payload: ReqCrearHorario): Promise<any> {
 export async function editarHorario(
   idHorario: number,
   payload: ReqEditarHorario
-): Promise<any> {
-  return apiRequest<any>(`/api/Horario/editar/${idHorario}`, {
+): Promise<unknown> {
+  return apiRequest<unknown>(`/api/Horario/editar/${idHorario}`, {
     method: "PUT",
     body: JSON.stringify(payload),
   });
@@ -91,8 +156,8 @@ export async function editarHorario(
 /**
  * Elimina un horario
  */
-export async function eliminarHorario(idHorario: number): Promise<any> {
-  return apiRequest<any>(`/api/Horario/eliminar`, {
+export async function eliminarHorario(idHorario: number): Promise<unknown> {
+  return apiRequest<unknown>(`/api/Horario/eliminar`, {
     method: "DELETE",
     body: JSON.stringify({ idHorario }),
   });
@@ -106,6 +171,11 @@ export async function getNucleos(): Promise<NucleoTematico[]> {
   return apiRequest<NucleoTematico[]>(`/api/NucleoTematicoes`);
 }
 
+/** Obtiene los núcleos vistos asociados al usuario autenticado. */
+export async function getMisNucleosVistos(): Promise<unknown> {
+  return apiRequest<unknown>(`/api/NucleoTematicoes/mis-nucleos-vistos`);
+}
+
 /**
  * Obtiene un núcleo temático específico por ID
  */
@@ -116,8 +186,8 @@ export async function getNucleoById(id: string): Promise<NucleoTematico> {
 /**
  * Crea un nuevo núcleo temático
  */
-export async function crearNucleo(payload: NucleoTematico): Promise<any> {
-  return apiRequest<any>(`/api/NucleoTematicoes`, {
+export async function crearNucleo(payload: ReqCrearNucleo): Promise<NucleoTematico> {
+  return apiRequest<NucleoTematico>(`/api/NucleoTematicoes`, {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -128,9 +198,9 @@ export async function crearNucleo(payload: NucleoTematico): Promise<any> {
  */
 export async function editarNucleo(
   id: string,
-  payload: Partial<NucleoTematico>
-): Promise<any> {
-  return apiRequest<any>(`/api/NucleoTematicoes/${id}`, {
+  payload: ReqEditarNucleo
+): Promise<NucleoTematico> {
+  return apiRequest<NucleoTematico>(`/api/NucleoTematicoes/${id}`, {
     method: "PUT",
     body: JSON.stringify(payload),
   });
@@ -139,8 +209,8 @@ export async function editarNucleo(
 /**
  * Elimina un núcleo temático
  */
-export async function eliminarNucleo(id: string): Promise<any> {
-  return apiRequest<any>(`/api/NucleoTematicoes/${id}`, {
+export async function eliminarNucleo(id: string): Promise<unknown> {
+  return apiRequest<unknown>(`/api/NucleoTematicoes/${id}`, {
     method: "DELETE",
   });
 }
@@ -180,8 +250,8 @@ export async function getNucleosOrdenadosPorCupo(): Promise<NucleoTematico[]> {
 export async function actualizarCupo(
   id: string,
   payload: ReqActualizarCupo
-): Promise<any> {
-  return apiRequest<any>(`/api/NucleoTematicoes/${id}/cupo`, {
+): Promise<unknown> {
+  return apiRequest<unknown>(`/api/NucleoTematicoes/${id}/cupo`, {
     method: "PUT",
     body: JSON.stringify(payload),
   });
@@ -210,13 +280,23 @@ export async function getMateriasPermitidas(idUsuario: number): Promise<unknown>
   return apiRequest<unknown>(`/api/ReglasMatricula/materias-permitidas/${idUsuario}`);
 }
 
+/** Sube una sábana académica en PDF para procesarla en el backend. */
+export async function subirSabana(archivo: File): Promise<unknown> {
+  const formData = new FormData();
+  formData.append("archivo", archivo);
+  return apiRequest<unknown>("/api/Sabana/subir", {
+    method: "POST",
+    body: formData,
+  });
+}
+
 /**
  * Actualiza el estado de matrícula de un estudiante
  */
 export async function actualizarEstadoMatricula(
   idEstudiante: number
-): Promise<any> {
-  return apiRequest<any>(
+): Promise<unknown> {
+  return apiRequest<unknown>(
     `/api/PeriodoMatricula/actualizar/${idEstudiante}`,
     {
       method: "PUT",
@@ -225,6 +305,10 @@ export async function actualizarEstadoMatricula(
 }
 
 // ==================== Usuarios Endpoints ====================
+export async function getEstudiantes(): Promise<Usuario[]> {
+  return apiRequest<Usuario[]>(`/api/Usuarios/estudiantes`);
+}
+
 /**
  * Obtiene datos de un usuario específico
  */
@@ -265,8 +349,8 @@ export async function editarUsuario(
 /**
  * Elimina un usuario
  */
-export async function eliminarUsuario(id: number): Promise<any> {
-  return apiRequest<any>(`/api/Usuarios/${id}`, {
+export async function eliminarUsuario(id: number): Promise<unknown> {
+  return apiRequest<unknown>(`/api/Usuarios/${id}`, {
     method: "DELETE",
   });
 }
@@ -281,6 +365,6 @@ export async function contarUsuarios(): Promise<ResponseCantiUsuarios> {
 /**
  * Obtiene cantidad de estudiantes por programa
  */
-export async function getEstudiantesPorPrograma(): Promise<any> {
-  return apiRequest<any>(`/api/Usuarios/estudiantes-por-programa`);
+export async function getEstudiantesPorPrograma(): Promise<EstudiantesPorPrograma[]> {
+  return apiRequest<EstudiantesPorPrograma[]>(`/api/Usuarios/estudiantes-por-programa`);
 }

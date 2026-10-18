@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { AuthContext, type AuthUser } from "./authState";
 import { menuItems } from "../constants/menu";
 import type { Role } from "../constants/roles";
-import { loginUsuario } from "../services/backend";
+import { inicioSesionUsuario, loginUsuario } from "../services/backend";
+import type { ResponseLoginDto } from "../services/types";
+import { isInstitutionalEmail, normalizeEmail } from "../utils/email";
 
 function normalizeRole(value?: string): Role | null {
   const normalized = value?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
@@ -53,11 +55,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const login = async (email: string, password: string) => {
+    if (!isInstitutionalEmail(email)) {
+      return { ok: false, error: "Usa tu correo institucional @ucundinamarca.edu.co." };
+    }
+
     try {
-      const result = await loginUsuario({
-        correo: email.trim().toLowerCase(),
+      const credentials = {
+        correo: normalizeEmail(email),
         contrasenia: password,
-      });
+      };
+      let result: ResponseLoginDto;
+      try {
+        result = await loginUsuario(credentials);
+      } catch (primaryError) {
+        const statusCode = (primaryError as Error & { statusCode?: number }).statusCode;
+        if (statusCode && statusCode < 500 && statusCode !== 404) throw primaryError;
+        try {
+          result = await inicioSesionUsuario(credentials);
+        } catch {
+          throw primaryError;
+        }
+      }
       if (result.respuesta !== 1 || !result.token) {
         return { ok: false, error: result.mensaje || "Credenciales inválidas." };
       }
@@ -74,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser({
         id: result.idUsuario,
         name: result.nombreUsuario || result.correo || email,
-        email: result.correo || email.trim().toLowerCase(),
+        email: normalizeEmail(result.correo || email),
         role,
       });
       return { ok: true };
@@ -90,6 +108,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("studyplanner-token");
+  };
+
+  const updateProfile = (profile: Pick<AuthUser, "name" | "email" | "telefono">) => {
+    setUser((current) => current ? { ...current, ...profile } : current);
   };
 
   const canAccess = useMemo(
@@ -108,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       isAuthenticated: Boolean(user),
       login,
+      updateProfile,
       logout,
       canAccess,
     }),

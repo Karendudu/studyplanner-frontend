@@ -7,16 +7,70 @@ export interface ApiError {
   respuesta?: number;
 }
 
+interface ApiRequestError extends Error {
+  statusCode?: number;
+  response?: unknown;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function formatFieldName(field: string) {
+  const normalized = field.replace(/^\$\./, "").toLowerCase();
+  const labels: Record<string, string> = {
+    correo: "Correo",
+    contrasenia: "Contraseña",
+    contraseña: "Contraseña",
+  };
+  return labels[normalized] || normalized;
+}
+
+function getApiErrorMessage(payload: unknown, status: number): string {
+  let data = payload;
+  if (typeof data === "string") {
+    const text = data;
+    try {
+      data = JSON.parse(data) as unknown;
+    } catch {
+      return text.trim() || getErrorMessageByStatus(status);
+    }
+  }
+
+  if (!isRecord(data)) return getErrorMessageByStatus(status);
+
+  if (isRecord(data.errors)) {
+    const validationMessages = Object.entries(data.errors).flatMap(([field, messages]) => {
+      const fieldMessages = Array.isArray(messages)
+        ? messages.filter((message): message is string => typeof message === "string")
+        : typeof messages === "string" ? [messages] : [];
+      return fieldMessages.map((message) => `${formatFieldName(field)}: ${message}`);
+    });
+    if (validationMessages.length > 0) return validationMessages.join(" ");
+  }
+
+  for (const key of ["mensaje", "message", "detail"]) {
+    if (typeof data[key] === "string" && data[key].trim()) return data[key];
+  }
+
+  if (typeof data.title === "string" && data.title !== "One or more validation errors occurred.") {
+    return data.title;
+  }
+
+  return getErrorMessageByStatus(status);
+}
+
 /**
  * Maneja errores de la API de forma amigable
  */
 export function handleApiError(error: unknown): ApiError {
   if (error instanceof Error) {
-    const statusCode = (error as Error & { statusCode?: number }).statusCode;
+    const apiError = error as ApiRequestError;
+    const statusCode = apiError.statusCode;
     if (statusCode) {
       return {
         statusCode,
-        mensaje: error.message || getErrorMessageByStatus(statusCode),
+        mensaje: getApiErrorMessage(apiError.response ?? error.message, statusCode),
         detalles: error.stack,
       };
     }
@@ -83,10 +137,11 @@ export async function apiRequest<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = localStorage.getItem("studyplanner-token");
+  const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
 
-  const defaultHeaders: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+  const defaultHeaders: Record<string, string> = isFormData
+    ? {}
+    : { "Content-Type": "application/json" };
 
   if (token) {
     defaultHeaders.Authorization = `Bearer ${token}`;
@@ -102,15 +157,15 @@ export async function apiRequest<T>(
     });
 
     const contentType = response.headers.get("content-type") || "";
+    const isJsonResponse = contentType.includes("application/json") || contentType.includes("+json");
 
     // Manejo de respuestas no-JSON
-    if (!contentType.includes("application/json")) {
+    if (!isJsonResponse) {
       if (!response.ok) {
         const text = await response.text().catch(() => "");
-        const error = new Error(text || getErrorMessageByStatus(response.status)) as Error & {
-          statusCode?: number;
-        };
+        const error = new Error(getApiErrorMessage(text, response.status)) as ApiRequestError;
         error.statusCode = response.status;
+        error.response = text;
         throw error;
       }
       return (await response.text()) as unknown as T;
@@ -121,17 +176,16 @@ export async function apiRequest<T>(
 
     // Si no es exitosa, lanzar error
     if (!response.ok) {
-      const errorMsg = data.mensaje || getErrorMessageByStatus(response.status);
-      const error = new Error(errorMsg);
-      (error as any).statusCode = response.status;
-      (error as any).response = data;
+      const error = new Error(getApiErrorMessage(data, response.status)) as ApiRequestError;
+      error.statusCode = response.status;
+      error.response = data;
       throw error;
     }
 
     return data as T;
   } catch (error) {
     // Re-lanzar errores conocidos
-    if (error instanceof Error && (error as any).statusCode) {
+    if (error instanceof Error && (error as ApiRequestError).statusCode) {
       throw error;
     }
 

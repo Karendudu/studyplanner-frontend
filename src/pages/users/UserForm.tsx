@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
+import { isInstitutionalEmail, normalizeEmail } from "../../utils/email";
 
 interface UserFormProps {
   onSubmit: (data: {
@@ -10,7 +11,7 @@ interface UserFormProps {
     telefono: string;
     rol: string;
     contrasenia: string;
-  }) => void;
+  }) => Promise<boolean>;
   onCancel: () => void;
   initialData?: {
     nombre?: string;
@@ -38,7 +39,7 @@ function UserForm({ onSubmit, onCancel, initialData }: UserFormProps) {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
@@ -47,13 +48,13 @@ function UserForm({ onSubmit, onCancel, initialData }: UserFormProps) {
       return;
     }
 
-    if (!initialData && form.contrasenia.length < 8) {
-      setError("La contraseña inicial debe tener al menos 8 caracteres.");
+    if (form.contrasenia.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres.");
       return;
     }
 
-    const email = form.correo.trim().toLowerCase();
-    if (!email.endsWith("@ucundinamarca.edu.co")) {
+    const email = normalizeEmail(form.correo);
+    if (!isInstitutionalEmail(email)) {
       setError("El correo debe ser institucional @ucundinamarca.edu.co.");
       return;
     }
@@ -68,8 +69,10 @@ function UserForm({ onSubmit, onCancel, initialData }: UserFormProps) {
       return;
     }
 
-    onSubmit(form);
-    setForm({ nombre: "", apellido: "", correo: "", documento: "", telefono: "", rol: "Estudiante", contrasenia: "" });
+    const saved = await onSubmit(form);
+    if (saved) {
+      setForm({ nombre: "", apellido: "", correo: "", documento: "", telefono: "", rol: "Estudiante", contrasenia: "" });
+    }
   };
 
   return (
@@ -100,6 +103,8 @@ function UserForm({ onSubmit, onCancel, initialData }: UserFormProps) {
           type="email"
           value={form.correo}
           onChange={(event) => handleChange("correo", event.target.value)}
+          pattern=".+@ucundinamarca\.edu\.co"
+          title="Usa un correo @ucundinamarca.edu.co."
           className="w-full mt-2 border rounded-xl p-3"
         />
       </label>
@@ -120,11 +125,15 @@ function UserForm({ onSubmit, onCancel, initialData }: UserFormProps) {
             value={form.telefono}
             onChange={(event) => handleChange("telefono", event.target.value)}
             className="w-full mt-2 border rounded-xl p-3"
+            required
           />
         </label>
       </div>
 
-      <label className="space-y-2 font-medium text-gray-700">
+      {initialData ? (
+        <p className="text-sm font-medium text-[#33483a]">Rol actual: {form.rol}</p>
+      ) : (
+        <label className="space-y-2 font-medium text-gray-700">
         Rol
         <select
           value={form.rol}
@@ -135,10 +144,10 @@ function UserForm({ onSubmit, onCancel, initialData }: UserFormProps) {
           <option>Udec</option>
         </select>
       </label>
+      )}
 
-      {!initialData && (
         <label className="block space-y-2 font-medium text-gray-700">
-          Contraseña inicial
+          {initialData ? "Nueva contraseña" : "Contraseña inicial"}
           <input
             type="password"
             autoComplete="new-password"
@@ -148,8 +157,7 @@ function UserForm({ onSubmit, onCancel, initialData }: UserFormProps) {
             className="mt-2 w-full rounded-xl border p-3"
             required
           />
-        </label>
-      )}
+      </label>
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
@@ -158,7 +166,7 @@ function UserForm({ onSubmit, onCancel, initialData }: UserFormProps) {
           Cancelar
         </button>
 
-        <button className="bg-[#007B3E] text-white px-6 py-3 rounded-xl">Guardar</button>
+        <button type="submit" className="bg-[#007B3E] text-white px-6 py-3 rounded-xl">Guardar</button>
       </div>
     </form>
   );

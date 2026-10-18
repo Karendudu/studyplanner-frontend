@@ -1,122 +1,72 @@
+import { BookOpen, Users } from "lucide-react";
 import { useEffect, useState } from "react";
-import {
-    Users,
-    GraduationCap,
-    BookOpen,
-    Bell
-} from "lucide-react";
-
-import StatCard from "../../components/ui/StatCard";
-import { contarUsuarios, getNucleos } from "../../services/backend";
 import QuickActions from "../../components/dashboard/QuickActions";
-import WeeklySchedule from "../../components/dashboard/WeeklySchedule";
 import RecentNotices from "../../components/dashboard/RecentNotices";
-
-const LOCAL_FALLBACK_STATS = {
-    totalUsuarios: 24,
-    totalPrograms: 8,
-    totalMaterias: 36,
-    totalAvisos: 5,
-};
+import WeeklySchedule from "../../components/dashboard/WeeklySchedule";
+import StatCard from "../../components/ui/StatCard";
+import { useAuth } from "../../context/authState";
+import { contarUsuarios, getNucleos } from "../../services/backend";
 
 function Dashboard() {
-    const [stats, setStats] = useState({
-        totalUsuarios: 0,
-        totalPrograms: 0,
-        totalMaterias: 0,
-        totalAvisos: 0,
+    const { user } = useAuth();
+    const canSeeUsers = user?.role === "admin" || user?.role === "udec";
+    const [stats, setStats] = useState<{ totalUsuarios: number | string; totalNucleos: number | string }>({
+        totalUsuarios: "—",
+        totalNucleos: "—",
     });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const cargarEstadisticas = async () => {
-            try {
-                const [usuariosData, nucleosData] = await Promise.all([
-                    contarUsuarios(),
-                    getNucleos()
-                ]);
+        let cancelled = false;
 
-                setStats({
-                    totalUsuarios: usuariosData.totalEstudiantes + usuariosData.totalAdministradores,
-                    totalPrograms: 8, // TODO: agregar endpoint
-                    totalMaterias: nucleosData.length,
-                    totalAvisos: 5, // TODO: agregar endpoint
-                });
-            } catch (err) {
-                // Evita ruido visual cuando el backend está caído.
-                setStats(LOCAL_FALLBACK_STATS);
-                console.warn("Dashboard en modo local sin backend.", err);
-            } finally {
-                setLoading(false);
-            }
+        const cargarEstadisticas = async () => {
+            const [usuarios, nucleos] = await Promise.allSettled([
+                canSeeUsers ? contarUsuarios() : Promise.resolve(null),
+                getNucleos(),
+            ]);
+            if (cancelled) return;
+
+            setStats({
+                totalUsuarios: usuarios.status === "fulfilled" && usuarios.value
+                    ? usuarios.value.totalEstudiantes + usuarios.value.totalAdministradores
+                    : "—",
+                totalNucleos: nucleos.status === "fulfilled" ? nucleos.value.length : "—",
+            });
+            setLoading(false);
         };
 
-        cargarEstadisticas();
-    }, []);
+        void cargarEstadisticas();
+        return () => {
+            cancelled = true;
+        };
+    }, [canSeeUsers]);
 
     return (
-        <div className="space-y-8">
-            <div className="mb-8">
-                <h1 className="text-4xl font-bold text-[#00482B]">
-                    Dashboard
-                </h1>
-                <p className="text-cundi-700 mt-2 dark:text-gray-400">
-                    Bienvenido a StudyPlanner.
-                </p>
-            </div>
+        <div className="space-y-8 text-black">
+            <header>
+                <h1 className="text-4xl font-bold text-[#0f2a1d]">Dashboard</h1>
+                <p className="mt-2 text-[#152e21]">Bienvenido a StudyPlanner.</p>
+            </header>
+
+            <RecentNotices />
 
             {loading ? (
-                <div className="grid lg:grid-cols-4 gap-6">
-                    {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="h-32 bg-gray-200 dark:bg-slate-700 rounded-xl animate-pulse" />
+                <div className="grid max-w-3xl gap-6 md:grid-cols-2">
+                    {Array.from({ length: canSeeUsers ? 2 : 1 }, (_, item) => (
+                        <div key={item} className="h-32 animate-pulse rounded-xl bg-gray-200" />
                     ))}
                 </div>
             ) : (
-                <div className="grid lg:grid-cols-4 gap-6">
-                    <StatCard
-                        title="Usuarios"
-                        value={stats.totalUsuarios}
-                        color="#007B3E"
-                        icon={<Users size={30} />}
-                    />
-
-                    <StatCard
-                        title="Programas"
-                        value={stats.totalPrograms}
-                        color="#79C000"
-                        icon={<GraduationCap size={30} />}
-                    />
-
-                    <StatCard
-                        title="Materias"
-                        value={stats.totalMaterias}
-                        color="#00A99D"
-                        icon={<BookOpen size={30} />}
-                    />
-
-                    <StatCard
-                        title="Avisos"
-                        value={stats.totalAvisos}
-                        color="#F7931E"
-                        icon={<Bell size={30} />}
-                    />
+                <div className="grid max-w-3xl gap-6 md:grid-cols-2">
+                    {canSeeUsers && <StatCard title="Usuarios" value={stats.totalUsuarios} color="#007B3E" icon={<Users size={30} />} />}
+                    <StatCard title="Núcleos y Materias" value={stats.totalNucleos} color="#00A99D" icon={<BookOpen size={30} />} />
                 </div>
             )}
 
-            <div className="grid lg:grid-cols-2 gap-6 mt-8">
-                <WeeklySchedule />
-                <RecentNotices />
-            </div>
-
-            <div className="mt-8">
-                <QuickActions />
-
-            </div>
-
+            <WeeklySchedule />
+            <QuickActions />
         </div>
-
-    )
-
+    );
 }
 
 export default Dashboard;

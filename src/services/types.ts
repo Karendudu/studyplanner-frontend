@@ -17,6 +17,19 @@ export interface ResponseLoginDto {
   metodoVerificacion2FA?: string | null;
 }
 
+export interface ReqSolicitarRecuperacion {
+  correo: string;
+}
+
+export interface ReqVerificarCodigoRecuperacion {
+  correo: string;
+  codigo: string;
+}
+
+export interface ReqCambiarContraseniaRecuperacion extends ReqVerificarCodigoRecuperacion {
+  nuevaContrasenia: string;
+}
+
 // ==================== Email ====================
 export interface ReqEnviarEmail {
   destino: string;
@@ -128,6 +141,7 @@ export interface NucleoTematico {
   idUbicacionSemestral?: number;
   idPrograma?: number;
   idPrerrequisito?: number;
+  idCreditos?: number;
   cupos?: number;
   creditos?: number;
   horasSemanales?: number;
@@ -136,6 +150,28 @@ export interface NucleoTematico {
   idUbicacionSemestralNavigation?: UbicacionSemestral;
   nucleoHorarios?: NucleoHorario[];
   nucleosVistos?: NucleoVisto[];
+}
+
+export interface ReqCrearNucleo {
+  idCodigoNucleo?: string;
+  nombre?: string;
+  idUbicacionSemestral?: number;
+  idPrograma?: number;
+  idPrerrequisito?: number | null;
+  idCreditos?: number;
+  cupos?: number;
+  creditos?: number;
+  horasSemanales?: number;
+}
+
+export interface ReqEditarNucleo {
+  nombre?: string;
+  idUbicacionSemestral?: number;
+  idPrerrequisito?: number | null;
+  cupos?: number;
+  creditos?: number;
+  horasSemanales?: number;
+  idPrograma?: number;
 }
 
 export interface Prerequisito {
@@ -195,6 +231,16 @@ export interface AvisoInformativo {
   informacion?: string;
   idUsuarioNavigation?: Usuario;
 }
+
+export interface ReqCrearAvisoInformativo {
+  idUsuario: number;
+  tipoAviso: string;
+  informacion: string;
+}
+
+export type ReqEditarAvisoInformativo = Omit<ReqCrearAvisoInformativo, "idUsuario"> & {
+  idUsuario?: number;
+};
 
 export interface Estado {
   idEstado?: number;
@@ -281,6 +327,13 @@ export interface ResponseCantiUsuarios {
   totalEstudiantes: number;
   totalAdministradores: number;
   mensaje?: string;
+}
+
+export interface EstudiantesPorPrograma {
+  idPrograma: number;
+  nombre: string;
+  mensaje?: string;
+  cantidadEstudiantes: number;
 }
 
 // ==================== Respuestas Generales ====================

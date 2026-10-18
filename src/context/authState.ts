@@ -9,6 +9,7 @@ export interface AuthUser {
   faculty?: string;
   semester?: string;
   documento?: string;
+  telefono?: string;
   password?: string;
 }
 
@@ -16,6 +17,7 @@ export interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  updateProfile: (profile: Pick<AuthUser, "name" | "email" | "telefono">) => void;
   logout: () => void;
   canAccess: (path: string) => boolean;
 }

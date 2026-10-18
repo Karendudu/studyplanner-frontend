@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowRight, Eye, EyeOff, ShieldCheck, Sparkles } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, Eye, EyeOff, LoaderCircle, ShieldCheck, Sparkles } from "lucide-react";
 import { useAuth } from "../../context/authState";
 import Button from "../../components/ui/Button";
 
@@ -9,18 +9,25 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setError("");
-    const result = await login(email, password);
-    if (result.ok) {
-      navigate("/dashboard");
-      return;
+    try {
+      const result = await login(email, password);
+      if (result.ok) {
+        void navigate("/dashboard");
+        return;
+      }
+      setError(result.error || "Credenciales inválidas.");
+    } finally {
+      setIsSubmitting(false);
     }
-    setError(result.error || "Credenciales inválidas.");
   };
 
   return (
@@ -71,29 +78,41 @@ function LoginPage() {
               <p className="mt-2 text-sm text-[#4f6254]">Usa el correo y la contraseña de tu cuenta.</p>
             </div>
 
-            <form className="space-y-5" onSubmit={handleSubmit}>
+            <form className="space-y-5" onSubmit={handleSubmit} aria-busy={isSubmitting}>
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#1f3b2d]">Correo</label>
+                <label htmlFor="login-email" className="mb-2 block text-sm font-semibold text-[#1f3b2d]">Correo</label>
                 <input
+                  id="login-email"
+                  type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
+                  disabled={isSubmitting}
+                  autoComplete="email"
+                  pattern=".+@ucundinamarca\.edu\.co"
+                  title="Usa un correo @ucundinamarca.edu.co."
+                  required
                   className="w-full rounded-2xl border border-[#d6e3db] bg-white px-4 py-3.5 text-sm text-[#152e21] shadow-[inset_0_1px_2px_rgba(8,34,20,0.05)] outline-none transition focus:border-[#56a875] focus:ring-4 focus:ring-[#79c000]/20"
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[#1f3b2d]">Contraseña</label>
+                <label htmlFor="login-password" className="mb-2 block text-sm font-semibold text-[#1f3b2d]">Contraseña</label>
                 <div className="relative">
                   <input
+                    id="login-password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
+                    disabled={isSubmitting}
+                    autoComplete="current-password"
+                    required
                     placeholder="Ingresa tu contraseña"
                     className="w-full rounded-2xl border border-[#d6e3db] bg-white px-4 py-3.5 pr-12 text-sm text-[#152e21] shadow-[inset_0_1px_2px_rgba(8,34,20,0.05)] outline-none transition focus:border-[#56a875] focus:ring-4 focus:ring-[#79c000]/20"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((value) => !value)}
+                    disabled={isSubmitting}
                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl p-2 text-[#4f6254] transition hover:bg-[#eef6f1]"
                     aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                   >
@@ -102,17 +121,33 @@ function LoginPage() {
                 </div>
               </div>
 
+              <div className="-mt-2 text-right">
+                <Link to="/recuperar-contrasena" className="text-sm font-medium text-[#2f6a4b] hover:underline">
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
+
               {error ? <p className="rounded-xl border border-[#ffd8d5] bg-[#fff3f2] px-3 py-2 text-sm text-[#b42318]">{error}</p> : null}
 
               <Button
                 type="submit"
+                disabled={isSubmitting}
                 className="group w-full rounded-2xl border-0 bg-[linear-gradient(135deg,#0f7f46_0%,#12a15a_70%,#1ebc6b_100%)] text-white shadow-[0_14px_34px_rgba(22,135,79,0.34)]"
                 variant="primary"
                 size="lg"
               >
                 <span className="inline-flex items-center gap-2">
-                  Entrar al panel
-                  <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
+                  {isSubmitting ? (
+                    <>
+                      <LoaderCircle size={18} className="animate-spin" aria-hidden="true" />
+                      Conectando con el servidor...
+                    </>
+                  ) : (
+                    <>
+                      Entrar al panel
+                      <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
+                    </>
+                  )}
                 </span>
               </Button>
             </form>
@@ -128,7 +163,10 @@ function LoginPage() {
                 Volver al inicio
               </Button>
 
-              <p>¿Necesitas una cuenta? Solicítala al administrador de StudyPlanner.</p>
+              <p>¿Aún no tienes cuenta?</p>
+              <Link to="/register" className="inline-flex w-full items-center justify-center rounded-2xl border border-[#d6e3db] bg-white px-4 py-2.5 font-semibold text-[#18482f] transition hover:bg-[#f6fbf8]">
+                Crear cuenta de estudiante
+              </Link>
             </div>
           </section>
         </div>

@@ -10,16 +10,16 @@ interface UserTableProps {
 
 function UserTable({ users, onEdit, onDelete }: UserTableProps) {
   return (
-    <div className="surface-card overflow-hidden">
-      <table className="w-full">
+    <div className="surface-card overflow-x-auto">
+      <table className="w-full min-w-[760px]">
         <thead className="bg-[#00482B] text-white">
           <tr>
-            <th className="p-4 text-left">Nombre</th>
-            <th className="text-left">Correo</th>
-            <th className="text-left">Documento</th>
-            <th className="text-left">Rol</th>
-            <th className="text-left">Estado</th>
-            <th className="text-left">Acciones</th>
+            <th className="whitespace-nowrap p-4 text-left">Nombre</th>
+            <th className="whitespace-nowrap p-4 text-left">Correo</th>
+            <th className="whitespace-nowrap p-4 text-left">Documento</th>
+            <th className="whitespace-nowrap p-4 text-left">Rol</th>
+            <th className="whitespace-nowrap p-4 text-left">Estado</th>
+            <th className="whitespace-nowrap p-4 text-left">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -32,7 +32,7 @@ function UserTable({ users, onEdit, onDelete }: UserTableProps) {
               <td>
                 <Badge
                   text={user.estado}
-                  color={user.estado === "Activo" ? "green" : "red"}
+                  color={user.estado === "Activo" ? "green" : user.estado === "Inactivo" ? "red" : "yellow"}
                 />
               </td>
               <td>

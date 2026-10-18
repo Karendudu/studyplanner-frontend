@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 interface ErrorAlertProps {
   mensaje: string;
-  tipo?: "error" | "warning" | "info";
+  tipo?: "error" | "warning" | "info" | "success";
   autoDismiss?: number; // en milisegundos
   onClose?: () => void;
 }
@@ -31,12 +31,14 @@ export default function ErrorAlert({
     error: "border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-400",
     warning: "border-yellow-500/50 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
     info: "border-blue-500/50 bg-blue-500/10 text-blue-700 dark:text-blue-400",
+    success: "border-green-600/30 bg-green-500/10 text-green-800 dark:text-green-400",
   };
 
   const iconos = {
     error: "⚠️",
     warning: "⚡",
     info: "ℹ️",
+    success: "✓",
   };
 
   return (

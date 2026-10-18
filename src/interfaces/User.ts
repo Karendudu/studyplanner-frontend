@@ -6,5 +6,5 @@ export interface User {
   documento: string;
   telefono: string;
   rol: string;
-  estado: "Activo" | "Inactivo";
+  estado: "Activo" | "Inactivo" | "Sin dato";
 }

@@ -1,5 +1,7 @@
 # 📊 COMPARACIÓN BACKEND vs FRONTEND
 
+> **Nota de vigencia:** este documento es una fotografía histórica del 18 de septiembre de 2026 y reporta 27 endpoints. Para el inventario verificado contra el Swagger publicado el 30 de septiembre, consulta [COMPARACION_SWAGGER_ACTUAL.md](COMPARACION_SWAGGER_ACTUAL.md), que registra 29 operaciones, su consumo real y las rutas que aún faltan.
+
 **Fecha:** 18 de Septiembre de 2026  
 **Estado:** Análisis Completo
 

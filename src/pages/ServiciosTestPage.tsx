@@ -11,6 +11,12 @@ import { handleApiError } from "../services/api";
 import ErrorAlert from "../components/ui/ErrorAlert";
 import Button from "../components/ui/Button";
 
+interface ServiceTestResponse {
+  titulo: string;
+  datos: unknown;
+  cantidad?: number;
+}
+
 /**
  * PÁGINA DE PRUEBA DE SERVICIOS
  * 
@@ -23,11 +29,11 @@ import Button from "../components/ui/Button";
 export default function ServiciosTestPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState<any>(null);
+  const [response, setResponse] = useState<ServiceTestResponse | null>(null);
 
   // Estados para formularios
   const [loginForm, setLoginForm] = useState({
-    correo: "prueba@correo.com",
+    correo: "prueba@ucundinamarca.edu.co",
     contrasenia: "Prueba123*",
   });
   const [usuarioId, setUsuarioId] = useState("1");
@@ -109,7 +115,7 @@ export default function ServiciosTestPage() {
     setError("");
     setResponse(null);
     try {
-      const id = parseInt(usuarioId);
+      const id = Number.parseInt(usuarioId, 10);
       const result = await getUsuario(id);
       setResponse({
         titulo: "👤 Datos del Usuario",

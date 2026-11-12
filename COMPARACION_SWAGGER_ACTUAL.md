@@ -11,7 +11,7 @@ El listado compartido expone **44 operaciones**. El frontend tiene wrappers para
 |---|---:|---|
 | Autenticación | 2/2 | `/api/Auth/login` principal y `/api/Usuarios/inicioSesion` como fallback ante fallo de red/servidor; solo se acepta éxito con token. |
 | Avisos | 4/4 | Udec crea y edita; Udec y estudiantes listan y consultan el detalle. Dashboard muestra los tres más recientes. Confirmar autorización GET para estudiantes en backend. |
-| Cronograma | 2/2 | Consulta del programa del usuario y consulta por ID desde la página Cronograma. Las respuestas se muestran sin transformar porque Swagger no describe su esquema. |
+| Cronograma | 2/2 | Consulta del programa del usuario y consulta por ID desde la página Cronograma. La interfaz presenta materias, códigos, créditos y horas en tarjetas; otros campos anidados se muestran con etiquetas legibles. |
 | Horarios y correo | 6/6 | Listar, ver detalle, crear, editar, eliminar y enviar por correo desde Horarios. |
 | Núcleos | 10/12 | CRUD, filtros y consulta de núcleos vistos; faltan oferta académica y búsqueda por código. |
 | Período de matrícula | 4/4 | Período activo, estado, actualización y edición desde la vista administrativa. Las consultas personales se ejecutan solo para rol estudiante. |
@@ -28,7 +28,7 @@ El listado `/api/Usuarios/estudiantes` devuelve estudiantes, no un listado gener
 | Necesidad del frontend | Estado |
 |---|---|
 | Avisos | Udec gestiona y estudiantes consultan. No hay eliminación publicada; confirmar en backend que los GET permitan lectura estudiantil. |
-| Cronograma | Los dos GET están disponibles en una página; falta confirmar el contrato de respuesta para sustituir la visualización genérica por componentes tipados. |
+| Cronograma | Los dos GET están disponibles en una página con visualización adaptable. Confirmar el contrato de respuesta permitiría reemplazar la interpretación flexible por modelos tipados. |
 | Auditoría | No hay endpoint publicado; se retiró del menú y de las pantallas activas. Las rutas antiguas redirigen al dashboard. |
 | Listado general de usuarios | Solo está publicado el listado de estudiantes. |
 | CRUD independiente de programas, facultades o sedes | No hay endpoints específicos; Núcleos incluye relaciones de programa cuando el backend las devuelve. La ficha de Ingeniería y sus sedes usa información oficial estática. |

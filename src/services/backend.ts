@@ -19,6 +19,7 @@ import type {
   ReqActualizarCupo,
   EstudiantesPorPrograma,
   AvisoInformativo,
+  ReqEditarPeriodoMatricula,
   ReqCrearAvisoInformativo,
   ReqEditarAvisoInformativo,
   ReqSolicitarRecuperacion,
@@ -85,6 +86,15 @@ export async function enviarHorarioUsuario(payload: ReqEnviarEmail): Promise<Res
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+// ==================== Cronograma ====================
+export async function getCronogramaPorPrograma(idPrograma: number): Promise<unknown> {
+  return apiRequest<unknown>(`/api/Cronograma/programa/${idPrograma}`);
+}
+
+export async function getMiCronograma(): Promise<unknown> {
+  return apiRequest<unknown>("/api/Cronograma/mi-programa");
 }
 
 // ==================== Avisos Informativos ====================
@@ -280,6 +290,11 @@ export async function getMateriasPermitidas(idUsuario: number): Promise<unknown>
   return apiRequest<unknown>(`/api/ReglasMatricula/materias-permitidas/${idUsuario}`);
 }
 
+/** Genera los horarios según las reglas de matrícula. */
+export async function generarHorarios(): Promise<unknown> {
+  return apiRequest<unknown>("/api/ReglasMatricula/generar-horarios");
+}
+
 /** Sube una sábana académica en PDF para procesarla en el backend. */
 export async function subirSabana(archivo: File): Promise<unknown> {
   const formData = new FormData();
@@ -302,6 +317,17 @@ export async function actualizarEstadoMatricula(
       method: "PUT",
     }
   );
+}
+
+/** Edita un periodo de matrícula existente. */
+export async function editarPeriodoMatricula(
+  idPeriodoMatricula: number,
+  payload: ReqEditarPeriodoMatricula
+): Promise<PeriodoMatricula> {
+  return apiRequest<PeriodoMatricula>(`/api/PeriodoMatricula/editar/${idPeriodoMatricula}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
 }
 
 // ==================== Usuarios Endpoints ====================

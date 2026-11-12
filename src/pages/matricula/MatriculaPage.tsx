@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { handleApiError } from "../../services/api";
 import {
   actualizarEstadoMatricula,
@@ -89,9 +90,14 @@ function MatriculaPage() {
 
   return (
     <section className="mx-auto max-w-5xl space-y-6 text-[#152e21]">
-      <header className="border-b border-[#d5dfd7] pb-5">
-        <h1 className="text-3xl font-bold text-[#0f2a1d]">Matrícula</h1>
-        <p className="mt-2 text-[#506557]">Consulta el período, tu estado y las materias habilitadas.</p>
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#d5dfd7] pb-5">
+        <div>
+          <h1 className="text-3xl font-bold text-[#0f2a1d]">Matrícula</h1>
+          <p className="mt-2 text-[#506557]">Consulta el período, tu estado y las materias habilitadas.</p>
+        </div>
+        <Link to="/dashboard/matricula/periodos" className="inline-flex items-center rounded-lg border border-[#a8bdae] bg-white px-4 py-2.5 font-semibold text-[#183c29] hover:bg-[#edf5ef]">
+          Administrar período
+        </Link>
       </header>
 
       {error && <p role="alert" className="border border-[#e6b7b3] bg-[#fff3f2] px-4 py-3 text-sm text-[#8f2824]">{error}</p>}

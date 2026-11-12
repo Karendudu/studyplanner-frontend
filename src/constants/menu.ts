@@ -7,6 +7,7 @@ import {
   School,
   Building2,
   Calendar,
+  CalendarDays,
   BookOpen,
   Megaphone,
   type LucideIcon,
@@ -54,6 +55,12 @@ export const menuItems: MenuItem[] = [
     title: "Horarios",
     path: "/dashboard/horarios",
     icon: Calendar,
+    allowedRoles: ["admin", "udec", "student"],
+  },
+  {
+    title: "Cronograma",
+    path: "/dashboard/cronograma",
+    icon: CalendarDays,
     allowedRoles: ["admin", "udec", "student"],
   },
   {

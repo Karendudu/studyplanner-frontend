@@ -193,9 +193,21 @@ export interface ReqActualizarCupo {
 // ==================== Período de Matrícula ====================
 export interface PeriodoMatricula {
   idPeriodoMatricula?: number;
+  nombre?: string;
   fechaInicio?: string;
   fechaFin?: string;
+  fechaInicioRegistro?: string;
+  fechaFinRegistro?: string;
+  periodoAcademico?: string;
   estado?: boolean;
+  activo?: boolean;
+}
+
+export interface ReqEditarPeriodoMatricula {
+  nombre?: string;
+  fechaInicioRegistro?: string;
+  fechaFinRegistro?: string;
+  periodoAcademico?: string;
   activo?: boolean;
 }
 

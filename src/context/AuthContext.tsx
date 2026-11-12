@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { AuthContext, type AuthUser } from "./authState";
-import { menuItems } from "../constants/menu";
-import type { Role } from "../constants/roles";
+import { canAccessPath, type Role } from "../constants/roles";
 import { inicioSesionUsuario, loginUsuario } from "../services/backend";
 import type { ResponseLoginDto } from "../services/types";
 import { isInstitutionalEmail, normalizeEmail } from "../utils/email";
@@ -15,11 +14,6 @@ function normalizeRole(value?: string): Role | null {
   if (normalized === "admin" || normalized === "administrador") return "admin";
   if (normalized === "student" || normalized === "estudiante") return "student";
   return null;
-}
-
-function normalizePath(path: string) {
-  if (!path || path === "/") return "/";
-  return path.startsWith("/") ? path : `/${path}`;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -116,11 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const canAccess = useMemo(
     () => (path: string) => {
-      const normalized = normalizePath(path);
-      const menuEntry = menuItems.find((item) => item.path === normalized);
-
-      if (!user || !menuEntry) return false;
-      return !menuEntry.allowedRoles || menuEntry.allowedRoles.includes(user.role);
+      if (!user) return false;
+      return canAccessPath(path, user.role);
     },
     [user]
   );

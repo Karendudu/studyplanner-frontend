@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { Eye, Mail, Pencil, Plus, Trash2 } from "lucide-react";
 import ErrorAlert from "../../components/ui/ErrorAlert";
 import Modal from "../../components/ui/Modal";
@@ -35,6 +36,7 @@ const emptySchedule: ScheduleForm = {
 
 function HorariosPage() {
   const { user } = useAuth();
+  const canManageSchedules = user?.role !== "student";
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -197,9 +199,18 @@ function HorariosPage() {
           <h1 className="text-3xl font-bold text-[#0f2a1d]">Horarios</h1>
           <p className="mt-2 text-[#506557]">Consulta, organiza y comparte horarios académicos.</p>
         </div>
-        <button type="button" onClick={openCreate} className="inline-flex items-center gap-2 rounded-lg bg-[#087344] px-4 py-2.5 font-semibold text-white hover:bg-[#075d38]">
-          <Plus size={18} /> Crear horario
-        </button>
+        <div className="flex flex-wrap gap-2">
+          {canManageSchedules && (
+            <>
+              <Link to="/dashboard/horarios/generar" className="inline-flex items-center gap-2 rounded-lg border border-[#a8bdae] bg-white px-4 py-2.5 font-semibold text-[#183c29] hover:bg-[#edf5ef]">
+                Generar horarios
+              </Link>
+              <button type="button" onClick={openCreate} className="inline-flex items-center gap-2 rounded-lg bg-[#087344] px-4 py-2.5 font-semibold text-white hover:bg-[#075d38]">
+                <Plus size={18} /> Crear horario
+              </button>
+            </>
+          )}
+        </div>
       </header>
 
       {error && <ErrorAlert mensaje={error} tipo="error" onClose={() => setError("")} />}
@@ -220,9 +231,13 @@ function HorariosPage() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button type="button" title="Ver detalle" onClick={() => void showDetails(horario)} className="rounded-md border border-[#c8d8cd] p-2 text-[#183c29] hover:bg-[#eff6f1]"><Eye size={17} /></button>
-                  <button type="button" title="Editar horario" onClick={() => void openEdit(horario)} className="rounded-md border border-[#c8d8cd] p-2 text-[#183c29] hover:bg-[#eff6f1]"><Pencil size={17} /></button>
-                  <button type="button" title="Enviar por correo" onClick={() => { setEmailSchedule(horario); setEmailForm((current) => ({ ...current, destino: user?.email || current.destino })); }} className="rounded-md border border-[#c8d8cd] p-2 text-[#183c29] hover:bg-[#eff6f1]"><Mail size={17} /></button>
-                  <button type="button" title="Eliminar horario" onClick={() => setDeleteSchedule(horario)} className="rounded-md border border-[#e7c8c5] p-2 text-[#9e302b] hover:bg-[#fff1ef]"><Trash2 size={17} /></button>
+                  {canManageSchedules && (
+                    <>
+                      <button type="button" title="Editar horario" onClick={() => void openEdit(horario)} className="rounded-md border border-[#c8d8cd] p-2 text-[#183c29] hover:bg-[#eff6f1]"><Pencil size={17} /></button>
+                      <button type="button" title="Enviar por correo" onClick={() => { setEmailSchedule(horario); setEmailForm((current) => ({ ...current, destino: user?.email || current.destino })); }} className="rounded-md border border-[#c8d8cd] p-2 text-[#183c29] hover:bg-[#eff6f1]"><Mail size={17} /></button>
+                      <button type="button" title="Eliminar horario" onClick={() => setDeleteSchedule(horario)} className="rounded-md border border-[#e7c8c5] p-2 text-[#9e302b] hover:bg-[#fff1ef]"><Trash2 size={17} /></button>
+                    </>
+                  )}
                 </div>
               </div>
               <dl className="mt-4 grid grid-cols-3 gap-3 text-sm">
@@ -245,7 +260,72 @@ function HorariosPage() {
       </Modal>
 
       <Modal open={Boolean(details)} onClose={() => setDetails(null)} title={`Detalle horario #${details?.idHorario ?? ""}`}>
-        {details && <pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap break-words text-sm text-[#183c29]">{JSON.stringify(details, null, 2)}</pre>}
+        {details && (
+          <div className="max-h-[65vh] space-y-6 overflow-y-auto text-[#183c29]">
+            <section>
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#52665a]">Resumen</h3>
+              <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="border border-[#d5dfd7] p-3">
+                  <dt className="text-xs text-[#66776b]">Estudiante (ID)</dt>
+                  <dd className="mt-1 font-semibold">{details.idUsuario ?? "No disponible"}</dd>
+                </div>
+                <div className="border border-[#d5dfd7] p-3">
+                  <dt className="text-xs text-[#66776b]">Créditos</dt>
+                  <dd className="mt-1 font-semibold">{details.totalCreditos ?? "No disponible"}</dd>
+                </div>
+                <div className="border border-[#d5dfd7] p-3">
+                  <dt className="text-xs text-[#66776b]">Horas semanales</dt>
+                  <dd className="mt-1 font-semibold">{details.totalHorasSemanales ?? "No disponible"}</dd>
+                </div>
+                <div className="border border-[#d5dfd7] p-3">
+                  <dt className="text-xs text-[#66776b]">ID núcleo horario</dt>
+                  <dd className="mt-1 font-semibold">{details.idNucleoHorario ?? "No disponible"}</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section>
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#52665a]">Información académica</h3>
+              {details.idNucleoHorarioNavigation ? (
+                <div className="space-y-3">
+                  <dl className="grid gap-3 sm:grid-cols-2">
+                    <div className="border border-[#d5dfd7] p-3">
+                      <dt className="text-xs text-[#66776b]">Materia / núcleo</dt>
+                      <dd className="mt-1 font-medium">{details.idNucleoHorarioNavigation.idNucleoTematicoNavigation?.nombre ?? "No disponible"}</dd>
+                    </div>
+                    <div className="border border-[#d5dfd7] p-3">
+                      <dt className="text-xs text-[#66776b]">Grupo</dt>
+                      <dd className="mt-1 font-medium">{details.idNucleoHorarioNavigation.idGrupoNavigation?.nombreGrupo ?? "No disponible"}</dd>
+                    </div>
+                    <div className="border border-[#d5dfd7] p-3">
+                      <dt className="text-xs text-[#66776b]">Jornada</dt>
+                      <dd className="mt-1 font-medium">{details.idNucleoHorarioNavigation.idGrupoNavigation?.idJornadaNavigation?.jornada ?? "No disponible"}</dd>
+                    </div>
+                    <div className="border border-[#d5dfd7] p-3">
+                      <dt className="text-xs text-[#66776b]">Espacio</dt>
+                      <dd className="mt-1 font-medium">{details.idNucleoHorarioNavigation.idEspacioEducativoNavigation?.nombre ?? "No disponible"}</dd>
+                    </div>
+                  </dl>
+                  {details.idNucleoHorarioNavigation.horarios?.length ? (
+                    <ul className="divide-y divide-[#d5dfd7] border border-[#d5dfd7]">
+                      {details.idNucleoHorarioNavigation.horarios.map((session, index) => (
+                        <li key={`${session}-${index}`} className="px-3 py-2 text-sm">{session}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="border border-dashed border-[#c8d8cd] px-3 py-3 text-sm text-[#52665a]">
+                      El servicio no devolvió días ni horas para este horario.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="border border-dashed border-[#c8d8cd] px-3 py-3 text-sm text-[#52665a]">
+                  El servicio devolvió los datos generales, pero no incluyó el detalle de materias, días y horas.
+                </p>
+              )}
+            </section>
+          </div>
+        )}
       </Modal>
 
       <Modal open={Boolean(emailSchedule)} onClose={() => setEmailSchedule(null)} title="Enviar horario por correo">

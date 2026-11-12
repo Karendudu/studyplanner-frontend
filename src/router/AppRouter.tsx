@@ -15,7 +15,10 @@ import ProgramsPage from "../pages/programs/ProgramsPage";
 import UsersPage from "../pages/users/UsersPage";
 import MateriasPage from "../pages/materias/MateriasPage";
 import HorariosPage from "../pages/horarios/HorariosPage";
+import CronogramaPage from "../pages/horarios/CronogramaPage";
+import GenerarHorariosPage from "../pages/horarios/GenerarHorariosPage";
 import MatriculaPage from "../pages/matricula/MatriculaPage";
+import PeriodoMatriculaPage from "../pages/matricula/PeriodoMatriculaPage";
 import AvisosPage from "../pages/avisos/AvisosPage";
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -46,12 +49,15 @@ function AppRouter() {
         <Route index element={<Dashboard />} />
         <Route path="perfil" element={<ProfilePage />} />
         <Route path="usuarios" element={<RoleRoute path="/dashboard/usuarios"><UsersPage /></RoleRoute>} />
-        <Route path="programas" element={<ProgramsPage />} />
+        <Route path="programas" element={<RoleRoute path="/dashboard/programas"><ProgramsPage /></RoleRoute>} />
         <Route path="facultades" element={<RoleRoute path="/dashboard/facultades"><FacultiesPage /></RoleRoute>} />
         <Route path="sedes" element={<RoleRoute path="/dashboard/sedes"><HeadquartersPage /></RoleRoute>} />
-        <Route path="horarios" element={<HorariosPage />} />
-        <Route path="matricula" element={<MatriculaPage />} />
-        <Route path="materias" element={<MateriasPage />} />
+        <Route path="horarios" element={<RoleRoute path="/dashboard/horarios"><HorariosPage /></RoleRoute>} />
+        <Route path="cronograma" element={<RoleRoute path="/dashboard/cronograma"><CronogramaPage /></RoleRoute>} />
+        <Route path="horarios/generar" element={<RoleRoute path="/dashboard/horarios"><GenerarHorariosPage /></RoleRoute>} />
+        <Route path="matricula" element={<RoleRoute path="/dashboard/matricula"><MatriculaPage /></RoleRoute>} />
+        <Route path="matricula/periodos" element={<RoleRoute path="/dashboard/matricula"><PeriodoMatriculaPage /></RoleRoute>} />
+        <Route path="materias" element={<RoleRoute path="/dashboard/materias"><MateriasPage /></RoleRoute>} />
         <Route path="avisos" element={<RoleRoute path="/dashboard/avisos"><AvisosPage /></RoleRoute>} />
         <Route path="auditoria" element={<Navigate to="/dashboard" replace />} />
         <Route path="sabana" element={<RoleRoute path="/dashboard/sabana"><SabanaPage /></RoleRoute>} />
